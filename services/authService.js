@@ -11,7 +11,7 @@ const sendEmail = require("../utils/sendEmail");
 const { sanitizeUser } = require("../utils/sanitizeData");
 
 // @desc    Signup user
-// @route   Get /api/v1/auth/signup
+// @route   POST /api/v1/auth/signup
 // @access  Public
 exports.signup = asyncHandler(async (req, res, next) => {
   // 1- Create user
@@ -27,7 +27,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Login user
-// @route   Get /api/v1/auth/login
+// @route   POST /api/v1/auth/login
 // @access  Public
 exports.login = asyncHandler(async (req, res, next) => {
   // 1) check if password and email in the body (validation)
@@ -90,7 +90,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 });
 
 // @desc     Authorization (User Permissions)
-// ["Admin", "Support"]
+// ["Admin", "Teacher"]
 exports.allowedTo = (...roles) =>
   
   // 1) access roles

@@ -43,7 +43,7 @@ router.put(
 
 router
   .route("/")
-  .get(authService.allowedTo("admin", "support"), getUsers)
+  .get(authService.allowedTo("admin", "teacher"), getUsers)
   .post(
     authService.allowedTo("admin"),
     uploadUserImage,
@@ -53,7 +53,7 @@ router
   );
 router
   .route("/:id")
-  .get(authService.allowedTo("admin", "support"), getUserValidator, getUser)
+  .get(authService.allowedTo("admin", "teacher"), getUserValidator, getUser)
   .put(
     authService.allowedTo("admin"),
     uploadUserImage,

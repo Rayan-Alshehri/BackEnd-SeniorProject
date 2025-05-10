@@ -42,7 +42,7 @@ exports.getOne = (Model) =>
     const { id } = req.params;
     
     const document = await Model.findById(id);
-    
+
     if (!document) {
       return next(new ApiError(`No document for this id ${id}`, 404));
     }

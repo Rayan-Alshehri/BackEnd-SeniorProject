@@ -1,12 +1,15 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
+const cors = require('cors');
 
 dotenv.config({ path: "config.env" });
 const ApiError = require("./utils/apiError");
 const globalError = require("./middlewares/errorMiddleware");
 const dbConnection = require("./config/database");
-
+const mysqlConnection = require("./config/mysqlDatabase");
+const { initializeMySQLTables } = require("./utils/mysqlInit")
+const { setupAIBridge } = require('./utils/aiIntegration');
 
 // Routes
 const mountRoutes = require("./routes");
@@ -15,10 +18,22 @@ const mountRoutes = require("./routes");
 //connect with databases 
 dbConnection();
 
+// Connect with MySQL database and initialize tables
+(async () => {
+  await mysqlConnection(); // First establish the connection
+  await initializeMySQLTables(); // Then create tables if they don't exist
+})();
+
+
+// Setup AI integration
+setupAIBridge();
+
 
 //express app
 const app = express();
 
+// Add CORS middleware here
+app.use(cors());
 
 //Middlewares
 app.use(express.json({ limit: "20kb" }));
