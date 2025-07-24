@@ -33,7 +33,12 @@ setupAIBridge();
 const app = express();
 
 // Add CORS middleware here
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // No trailing slash!
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 //Middlewares
 app.use(express.json({ limit: "20kb" }));

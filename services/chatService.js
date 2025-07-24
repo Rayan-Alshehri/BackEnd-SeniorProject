@@ -388,22 +388,68 @@ exports.closeConversation = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/chats/stats
 // @access  Private/Admin
 exports.getChatStats = asyncHandler(async (req, res) => {
-  // Get counts by status
-  const statusCounts = await Conversation.getCounts();
+  // Get today's date at midnight for date filtering
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   
-  // Count total messages
-  const [messageCountResult] = await global.mysqlPool.query(
-    'SELECT COUNT(*) as count FROM messages'
+  // === USER STATISTICS ===
+  // Count active users by role
+  const activeStudents = await User.countDocuments({ 
+    role: 'student', 
+    active: true 
+  });
+  
+  const activeTeachers = await User.countDocuments({ 
+    role: 'teacher', 
+    active: true 
+  });
+  
+  const activeAdmins = await User.countDocuments({ 
+    role: 'admin', 
+    active: true 
+  });
+  
+  // === CONVERSATION STATISTICS ===
+  // Get the maximum conversation ID (total created)
+  const [maxConvResult] = await global.mysqlPool.query(
+    'SELECT MAX(id) as total_created FROM conversations'
   );
-  const totalMessages = messageCountResult[0].count;
+  const totalConversationsCreated = maxConvResult[0].total_created || 0;
   
-  // Count active users (users with at least one conversation)
-  const [activeUsersResult] = await global.mysqlPool.query(
-    'SELECT COUNT(DISTINCT mongo_user_id) as count FROM conversations'
+  // Count currently open conversations
+  const [openConvResult] = await global.mysqlPool.query(
+    "SELECT COUNT(*) as count FROM conversations WHERE status = 'open'"
   );
-  const activeUsers = activeUsersResult[0].count;
+  const currentlyOpenConversations = openConvResult[0].count;
   
-  // Get recent activity
+  // Count conversations created today
+  const [todayConvResult] = await global.mysqlPool.query(
+    'SELECT COUNT(*) as count FROM conversations WHERE DATE(created_at) = CURDATE()'
+  );
+  const conversationsCreatedToday = todayConvResult[0].count;
+  
+  // Count conversations closed today
+  const [closedTodayResult] = await global.mysqlPool.query(
+    `SELECT COUNT(*) as count FROM conversations 
+     WHERE status = 'closed' AND DATE(last_activity_at) = CURDATE()`
+  );
+  const conversationsClosedToday = closedTodayResult[0].count;
+  
+  // === MESSAGE STATISTICS ===
+  // Get the maximum message ID (total created)
+  const [maxMsgResult] = await global.mysqlPool.query(
+    'SELECT MAX(id) as total_messages FROM messages'
+  );
+  const totalMessagesAllTime = maxMsgResult[0].total_messages || 0;
+  
+  // Count messages sent today
+  const [todayMsgResult] = await global.mysqlPool.query(
+    'SELECT COUNT(*) as count FROM messages WHERE DATE(created_at) = CURDATE()'
+  );
+  const messagesToday = todayMsgResult[0].count;
+  
+  // === RECENT ACTIVITY ===
+  // Get recent activity for the last 7 days
   const [recentActivity] = await global.mysqlPool.query(
     `SELECT 
       DATE(created_at) as date,
@@ -414,12 +460,25 @@ exports.getChatStats = asyncHandler(async (req, res) => {
      ORDER BY date DESC`
   );
   
+  // Format the response
   res.status(200).json({
     data: {
-      statusCounts,
-      totalMessages,
-      activeUsers,
-      recentActivity
+      users: {
+        active_students: activeStudents,
+        active_teachers: activeTeachers,
+        active_admins: activeAdmins
+      },
+      conversations: {
+        total_created_all_time: totalConversationsCreated,
+        currently_open: currentlyOpenConversations,
+        created_today: conversationsCreatedToday,
+        closed_today: conversationsClosedToday
+      },
+      messages: {
+        total_all_time: totalMessagesAllTime,
+        messages_today: messagesToday
+      },
+      recent_activity_last_7_days: recentActivity
     }
   });
 });

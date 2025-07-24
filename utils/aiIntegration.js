@@ -23,8 +23,8 @@ exports.processAIResponse = async (conversationId, userMessage) => {
       content: msg.content
     }));
 
-    // Set a timeout for AI processing (30 seconds)
-    const AI_TIMEOUT_MS = 30000; 
+    // Set a timeout for AI processing 
+    const AI_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
     // Connect to the Python AI implementation
     // eslint-disable-next-line no-unused-vars

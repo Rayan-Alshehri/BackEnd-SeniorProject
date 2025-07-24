@@ -138,8 +138,8 @@ exports.Message = {
       [conversationId]
     );
     
-    // If this is the first message and from a user, use it to set the conversation title
-    if (senderType === 'user') {
+    // If this is the first message and from a student, use it to set the conversation title
+    if (senderType === 'student') {
       const [countResult] = await global.mysqlPool.query(
         'SELECT COUNT(*) as count FROM messages WHERE conversation_id = ?',
         [conversationId]

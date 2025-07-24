@@ -18,7 +18,6 @@ async function checkDatabaseExists() {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 const dbConnection = async () => {
   try {
     const dbIsValid = await checkDatabaseExists();
